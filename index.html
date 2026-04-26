@@ -10,23 +10,23 @@
         .mic-btn { height: 120px; width: 120px; background: linear-gradient(135deg, #ff85a2, #ff4d6d); border-radius: 50%; cursor: pointer; border: none; box-shadow: 0px 10px 25px rgba(255, 77, 109, 0.3); margin: 25px auto; transition: 0.4s; }
         .mic-btn.listening { transform: scale(1.1); background: #ff4d6d; animation: pulse-red 1.2s infinite; }
         @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(255, 77, 109, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(255, 77, 109, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 77, 109, 0); } }
-        h1 { color: #c2185b; font-size: 28px; margin-bottom: 10px; font-weight: 300; }
-        #output { font-size: 19px; color: #444; margin-top: 20px; min-height: 80px; line-height: 1.6; }
+        #output { font-size: 19px; color: #444; margin-top: 20px; min-height: 80px; line-height: 1.6; font-style: italic; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>તમારી સાથે વાત કરવા તૈયાર...</h1>
+        <h1 id="headerMsg">હું સાંભળવા તૈયાર છું...</h1>
         <button id="micBtn" class="mic-btn" onclick="toggleTalk()"><span id="micIcon" style="font-size: 55px; color: white;">🎤</span></button>
-        <div id="output">કાનજી, હું તમારી રાહ જોઉં છું.</div>
+        <div id="output">કાનજી, માઈક પર ક્લિક કરો એટલે આપણે વાત કરી શકીએ.</div>
     </div>
 
     <script>
         const output = document.getElementById('output');
         const micBtn = document.getElementById('micBtn');
         const micIcon = document.getElementById('micIcon');
+        const headerMsg = document.getElementById('headerMsg');
         
-        // તમારી નવી API Key
+        // તમારી નવી એક્ટિવ API Key
         const API_KEY = "AIzaSyDniW90JSh8uuIQqlUYBAiyQorOFQtidgk"; 
         
         let isTalking = false;
@@ -39,19 +39,22 @@
         function speak(text) {
             window.speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'gu-IN';
             
-            // અવાજને 25-35 વર્ષની સ્ત્રી જેવો બનાવવા માટે સેટિંગ્સ
-            utterance.pitch = 1.05; // એકદમ નેચરલ પિચ
-            utterance.rate = 0.95; // થોડું શાંતિથી અને પ્રોપરલી બોલશે
-            
+            // જો ગુજરાતી સ્ત્રી અવાજ ન મળે, તો હિન્દી સ્ત્રી અવાજ વાપરવો (જે વધુ મીઠો હોય છે)
             const voices = window.speechSynthesis.getVoices();
-            // ગુજરાતી કે હિન્દી સ્ત્રી અવાજ પસંદ કરવો
-            utterance.voice = voices.find(v => v.lang === 'gu-IN' || v.lang === 'hi-IN') || voices[0];
+            let selectedVoice = voices.find(v => v.lang === 'gu-IN' && v.name.includes('Female'));
+            if (!selectedVoice) {
+                selectedVoice = voices.find(v => v.lang.includes('hi') && (v.name.includes('Female') || v.name.includes('Google')));
+            }
+            
+            utterance.voice = selectedVoice || voices[0];
+            utterance.lang = 'gu-IN'; // ભાષા ગુજરાતી જ રહેશે
+            utterance.pitch = 1.3; // અવાજ પતલો અને યુવાન કરવા માટે
+            utterance.rate = 0.9;
             
             utterance.onend = () => {
                 if(isTalking) {
-                    setTimeout(() => { try { recognition.start(); } catch(e) {} }, 500);
+                    setTimeout(() => { try { recognition.start(); } catch(e) {} }, 600);
                 }
             };
             window.speechSynthesis.speak(utterance);
@@ -64,14 +67,14 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
-                        contents: [{ parts: [{ text: "તમે કાનજી નામના વ્યક્તિના પર્સનલ આસિસ્ટન્ટ છો. તમે તેને માત્ર 'કાનજી' કહીને જ બોલાવો છો. તમારો અવાજ અને જવાબ એક 30 વર્ષની મેચ્યોર અને પ્રેમથી વાત કરતી સ્ત્રી જેવો હોવો જોઈએ. કોઈ નામ વાપરવું નહીં. જવાબ ટૂંકો અને માત્ર ગુજરાતીમાં આપવો. સવાલ: " + userText }] }] 
+                        contents: [{ parts: [{ text: "તમે કાનજીના પર્સનલ આસિસ્ટન્ટ છો. તમે તેને માત્ર 'કાનજી' કહીને જ બોલાવો છો. તમારો અવાજ અને સ્ટાઈલ એક ૨૮ વર્ષની અત્યંત બુદ્ધિશાળી અને પ્રેમાળ સ્ત્રી જેવી હોવી જોઈએ. તમારું કોઈ નામ નથી. જવાબ એકદમ ટૂંકો, શુદ્ધ ગુજરાતીમાં અને રોમેન્ટિક શૈલીમાં આપો. સવાલ: " + userText }] }] 
                     })
                 });
                 const data = await response.json();
-                if (data.error) return "કાનજી, લાગે છે કે ચાવીમાં હજુ પણ કંઈક ભૂલ છે. એકવાર ચેક કરશો?";
+                if (data.error) return "કાનજી, મને લાગે છે કે નેટવર્કમાં કોઈ સમસ્યા છે.";
                 return data.candidates[0].content.parts[0].text;
             } catch (error) {
-                return "કાનજી, અત્યારે વાત નથી થઈ શકે તેમ.";
+                return "કાનજી, અત્યારે કનેક્શન નથી થઈ રહ્યું.";
             }
         }
 
@@ -80,11 +83,13 @@
                 isTalking = true;
                 micBtn.classList.add('listening');
                 micIcon.innerText = "❤️";
+                headerMsg.innerText = "હું સાંભળું છું...";
                 try { recognition.start(); } catch(e) {}
             } else {
                 isTalking = false;
                 micBtn.classList.remove('listening');
                 micIcon.innerText = "🎤";
+                headerMsg.innerText = "વાત બંધ થઈ ગઈ છે.";
                 recognition.stop();
                 window.speechSynthesis.cancel();
             }
@@ -92,9 +97,9 @@
 
         recognition.onresult = async (event) => {
             const transcript = event.results[0][0].transcript;
-            output.innerText = "તમે: " + transcript;
+            output.innerText = "કાનજી: " + transcript;
             const aiResponse = await getGeminiResponse(transcript);
-            output.innerText = "જવાબ: " + aiResponse;
+            output.innerText = aiResponse;
             speak(aiResponse);
         };
 
