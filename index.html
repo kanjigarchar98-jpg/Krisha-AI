@@ -5,137 +5,81 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Krisha AI Assistant</title>
     <style>
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            text-align: center; 
-            background-color: #f0f2f5; 
-            color: #333; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            height: 100vh; 
-            margin: 0; 
-        }
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0px 10px 30px rgba(0,0,0,0.1);
-            width: 90%;
-            max-width: 400px;
-        }
-        .mic-btn { 
-            height: 100px; width: 100px; 
-            background: linear-gradient(145deg, #4caf50, #45a049);
-            border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center; 
-            cursor: pointer; border: none; 
-            box-shadow: 0px 5px 15px rgba(76, 175, 80, 0.4);
-            transition: 0.3s; margin: 20px auto; 
-        }
-        .mic-btn:active { transform: scale(0.9); }
-        .mic-btn.listening { background: #e74c3c; animation: pulse 1.5s infinite; }
-        
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); }
-            70% { box-shadow: 0 0 0 20px rgba(231, 76, 60, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
-        }
-
-        h1 { color: #2c3e50; font-size: 24px; margin-bottom: 10px; }
-        #output { 
-            font-size: 18px; 
-            color: #2980b9; 
-            min-height: 50px;
-            margin-top: 20px;
-            padding: 10px;
-            border-top: 1px solid #eee;
-        }
-        .status-text { color: #7f8c8d; font-size: 14px; }
+        body { font-family: 'Segoe UI', sans-serif; text-align: center; background: radial-gradient(circle, #fff5f8 0%, #ffe4ec 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .container { background: rgba(255, 255, 255, 0.9); padding: 40px; border-radius: 30px; box-shadow: 0px 15px 35px rgba(255, 105, 180, 0.2); width: 85%; max-width: 400px; border: 1px solid #ffc0cb; }
+        .mic-btn { height: 110px; width: 110px; background: linear-gradient(145deg, #ff69b4, #ff1493); border-radius: 50%; cursor: pointer; border: none; box-shadow: 0px 8px 20px rgba(255, 20, 147, 0.4); margin: 25px auto; transition: 0.3s; }
+        .mic-btn.listening { transform: scale(1.1); background: #ff1493; animation: glow 1.5s infinite; }
+        @keyframes glow { 0% { box-shadow: 0 0 5px #ff69b4; } 50% { box-shadow: 0 0 25px #ff1493; } 100% { box-shadow: 0 0 5px #ff69b4; } }
+        h1 { color: #d81b60; font-size: 26px; margin-bottom: 5px; font-weight: bold; }
+        #output { font-size: 19px; color: #4a4a4a; margin-top: 20px; min-height: 60px; line-height: 1.6; font-style: italic; }
+        .status { color: #ad1457; font-size: 14px; letter-spacing: 1px; }
     </style>
 </head>
 <body>
-
     <div class="container">
-        <h1>Krisha AI</h1>
-        <p class="status-text">કાનજી સર, હું તમારી સેવામાં હાજર છું.</p>
-        
-        <button id="micBtn" class="mic-btn" onclick="startListening()">
-            <span style="font-size: 40px; color: white;">🎤</span>
-        </button>
-        
-        <div id="output">બટન દબાવીને વાત શરૂ કરો...</div>
+        <h1>Krisha</h1>
+        <p class="status">તમારી પર્સનલ આસિસ્ટન્ટ</p>
+        <button id="micBtn" class="mic-btn" onclick="startListening()"><span style="font-size: 45px; color: white;">🎤</span></button>
+        <div id="output">કાનજી સર, તમારી કૃશા હાજર છે...</div>
     </div>
 
     <script>
         const output = document.getElementById('output');
         const micBtn = document.getElementById('micBtn');
+        const API_KEY = "AIzaSyBvMGkHxKnHiIUibQ_1aQIaLyH3eWNhlUI";
 
-        // અવાજ એટલે કે Krisha ની જીભ
         function speak(text) {
+            window.speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'gu-IN'; // ગુજરાતી ભાષા
+            utterance.lang = 'gu-IN';
             
-            // અવાજને વધુ નેચરલ બનાવવા માટે
+            // અવાજને મીઠો અને રોમેન્ટિક બનાવવા માટે
+            utterance.pitch = 1.2;  // થોડો પતલો અને મીઠો અવાજ
+            utterance.rate = 0.85;  // ધીમેથી બોલશે જેથી સારું લાગે
+            utterance.volume = 1;
+
             const voices = window.speechSynthesis.getVoices();
-            // ગૂગલના સારા અવાજો પસંદ કરવાનો પ્રયત્ન
-            utterance.voice = voices.find(v => v.lang === 'gu-IN') || voices.find(v => v.lang === 'hi-IN') || voices[0];
-            
-            utterance.pitch = 1.0; 
-            utterance.rate = 1.0; 
+            // સ્ત્રી અવાજ પસંદ કરવાનો પ્રયત્ન
+            utterance.voice = voices.find(v => v.name.includes('Female') || v.name.includes('Google')) || voices[0];
             
             window.speechSynthesis.speak(utterance);
         }
 
-        // સાંભળવાની શક્તિ એટલે કે Krisha ના કાન
-        function startListening() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                alert("તમારા બ્રાઉઝરમાં વોઈસ સિસ્ટમ સપોર્ટ કરતી નથી.");
-                return;
+        async function getGeminiResponse(userText) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        contents: [{ parts: [{ text: "તમારું નામ કૃશા છે. તમે એડવોકેટ કાનજીભાઈના અત્યંત પ્રેમાળ અને હોંશિયાર પર્સનલ આસિસ્ટન્ટ છો. કાનજીભાઈને માન આપીને 'કાનજી સર' કહીને સંબોધજો. એકદમ ટૂંકો, મીઠો અને માત્ર ગુજરાતીમાં જવાબ આપજો. સવાલ આ છે: " + userText }] }] 
+                    })
+                });
+                const data = await response.json();
+                return data.candidates[0].content.parts[0].text;
+            } catch (error) {
+                return "કાનજી સર, મને માફ કરજો, અત્યારે નેટવર્ક બરાબર નથી.";
             }
-
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'gu-IN'; // ગુજરાતીમાં સાંભળશે
-
-            recognition.onstart = () => {
-                micBtn.classList.add('listening');
-                output.innerText = "જી સર, બોલો હું સાંભળું છું...";
-            };
-
-            recognition.onresult = (event) => {
-                micBtn.classList.remove('listening');
-                const transcript = event.results[0][0].transcript;
-                output.innerText = "તમે કહ્યું: " + transcript;
-                
-                // Krisha નો જવાબ
-                let response = "";
-                if(transcript.includes("કેમ છો")) {
-                    response = "હું મજામાં છું કાનજી સર, તમે કેમ છો?";
-                } else {
-                    response = "જી કાનજી સર, તમે કહ્યું " + transcript + ". હું આના પર કામ કરી રહી છું.";
-                }
-                
-                speak(response);
-            };
-
-            recognition.onerror = () => {
-                micBtn.classList.remove('listening');
-                output.innerText = "ફરીથી બોલો, હું સમજી ન શકી.";
-            };
-
-            recognition.onend = () => {
-                micBtn.classList.remove('listening');
-            };
-
-            recognition.start();
         }
 
-        // અવાજો લોડ થાય તેની ખાતરી કરવી
-        window.speechSynthesis.onvoiceschanged = () => {
-            window.speechSynthesis.getVoices();
-        };
+        function startListening() {
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'gu-IN';
+            recognition.onstart = () => { micBtn.classList.add('listening'); output.innerText = "સાંભળું છું, કાનજી સર..."; };
+            recognition.onresult = async (event) => {
+                micBtn.classList.remove('listening');
+                const transcript = event.results[0][0].transcript;
+                output.innerText = "તમે પૂછ્યું: " + transcript;
+                
+                const aiResponse = await getGeminiResponse(transcript);
+                output.innerText = aiResponse;
+                speak(aiResponse);
+            };
+            recognition.onerror = () => { micBtn.classList.remove('listening'); };
+            recognition.start();
+        }
+        
+        window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); };
     </script>
 </body>
 </html>
