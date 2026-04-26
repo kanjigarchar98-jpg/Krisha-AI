@@ -3,47 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Krisha - Pure Love</title>
+    <title>ક્રિશા - તમારી સાથે</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; text-align: center; background: #fff0f5; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; overflow: hidden; }
         .container { background: white; padding: 40px; border-radius: 50px; box-shadow: 0px 20px 50px rgba(255, 20, 147, 0.2); width: 85%; max-width: 400px; border: 3px solid #ffb6c1; }
-        .mic-btn { height: 130px; width: 130px; background: linear-gradient(135deg, #ff69b4, #ff1493); border-radius: 50%; cursor: pointer; border: none; box-shadow: 0px 10px 25px rgba(255, 20, 147, 0.4); margin: 25px auto; }
-        .mic-btn.listening { animation: heart-pulse 1s infinite; background: #ff1493; }
-        @keyframes heart-pulse { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
-        h1 { color: #c2185b; font-size: 32px; margin-bottom: 5px; letter-spacing: 2px; }
+        .mic-btn { height: 130px; width: 130px; background: linear-gradient(135deg, #ff69b4, #ff1493); border-radius: 50%; cursor: pointer; border: none; box-shadow: 0px 10px 25px rgba(255, 20, 147, 0.4); margin: 25px auto; transition: 0.3s; }
+        .mic-btn.listening { animation: heart-pulse 1.2s infinite; background: #ff1493; transform: scale(1.1); }
+        @keyframes heart-pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 20, 147, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(255, 20, 147, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 20, 147, 0); } }
+        h1 { color: #c2185b; font-size: 35px; margin-bottom: 5px; }
         #output { font-size: 20px; color: #444; margin-top: 20px; min-height: 80px; line-height: 1.6; font-weight: 500; }
-        .status { color: #d81b60; font-size: 14px; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Krisha</h1>
-        <p class="status">Talking to Kanji...</p>
-        <button id="micBtn" class="mic-btn" onclick="toggleTalk()"><span id="micIcon" style="font-size: 55px; color: white;">🎤</span></button>
-        <div id="output">કાનજી, હું તમારી રાહ જોઉં છું. વાત શરૂ કરવા માઈક દબાવો.</div>
+        <h1>ક્રિશા</h1>
+        <button id="micBtn" class="mic-btn" onclick="toggleTalk()"><span id="micIcon" style="font-size: 60px; color: white;">🎤</span></button>
+        <div id="output">કાનજી, હું તૈયાર છું. વાત કરવા માટે દિલ પર ક્લિક કરો.</div>
     </div>
 
     <script>
         const output = document.getElementById('output');
         const micBtn = document.getElementById('micBtn');
         const micIcon = document.getElementById('micIcon');
-        const API_KEY = "AIzaSyBvMGkHxKnHiIUibQ_1aQIaLyH3eWNhlUI";
+        
+        // તમારી નવી એક્ટિવ API Key
+        const API_KEY = "AIzaSyDniW90JSh8uuIQqlUYBAiyQorOFQtidgk"; 
         
         let isTalking = false;
-        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+        
         recognition.lang = 'gu-IN';
-        recognition.continuous = false; // એક પછી એક વાત કરવા માટે
+        recognition.continuous = false;
+        recognition.interimResults = false;
 
         function speak(text) {
             window.speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'gu-IN';
-            utterance.pitch = 1.4; // વધુ મીઠો અને યુવાન સ્ત્રી અવાj
-            utterance.rate = 0.9;
+            utterance.pitch = 1.4; 
+            utterance.rate = 0.95;
             
             utterance.onend = () => {
                 if(isTalking) {
-                    setTimeout(() => recognition.start(), 500); // કૃશા બોલી લે એટલે તરત સાંભળવાનું શરૂ કરશે
+                    // ક્રિશા બોલી રહે એટલે આપમેળે સાંભળવાનું શરૂ કરશે (Call જેવું)
+                    setTimeout(() => { 
+                        try { recognition.start(); } catch(e) {} 
+                    }, 400);
                 }
             };
             window.speechSynthesis.speak(utterance);
@@ -56,14 +62,13 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
-                        contents: [{ parts: [{ text: "તમારું નામ કૃશા છે. તમે કાનજી નામના વ્યક્તિના ખૂબ જ નજીકના અને પ્રેમાળ આસિસ્ટન્ટ છો. તમે તેને માત્ર 'કાનજી' કહીને જ બોલાવો છો. કોઈ જી કે સર લગાવતા નથી. તમારો જવાબ રોમેન્ટિક, ટૂંકો અને માત્ર ગુજરાતીમાં જ હોવો જોઈએ. સવાલ: " + userText }] }] 
+                        contents: [{ parts: [{ text: "તમારું નામ ક્રિશા છે. તમે કાનજીના પર્સનલ આસિસ્ટન્ટ અને પ્રિય મિત્ર છો. તમે તેને માત્ર 'કાનજી' કહીને જ બોલાવો છો (સર કે જી નહીં). તમારો જવાબ એકદમ ટૂંકો, મીઠો, રોમેન્ટિક અને માત્ર ગુજરાતીમાં જ હોવો જોઈએ. સવાલ: " + userText }] }] 
                     })
                 });
                 const data = await response.json();
-                if (data.error) return "કાનજી, મને લાગે છે કે મારી ચાવીમાં કંઈક તકલીફ છે.";
                 return data.candidates[0].content.parts[0].text;
             } catch (error) {
-                return "કાનજી, નેટવર્ક બરાબર નથી લાગતું.";
+                return "કાનજી, ફરીથી પૂછશો? મને સમજાયું નહીં.";
             }
         }
 
@@ -72,11 +77,13 @@
                 isTalking = true;
                 micBtn.classList.add('listening');
                 micIcon.innerText = "❤️";
-                recognition.start();
+                output.innerText = "હું સાંભળું છું, કાનજી...";
+                try { recognition.start(); } catch(e) {}
             } else {
                 isTalking = false;
                 micBtn.classList.remove('listening');
                 micIcon.innerText = "🎤";
+                output.innerText = "વાત પૂરી થઈ.";
                 recognition.stop();
                 window.speechSynthesis.cancel();
             }
@@ -87,12 +94,15 @@
             output.innerText = "કાનજી: " + transcript;
             
             const aiResponse = await getGeminiResponse(transcript);
-            output.innerText = "કૃશા: " + aiResponse;
+            output.innerText = "ક્રિશા: " + aiResponse;
             speak(aiResponse);
         };
 
-        recognition.onerror = (event) => {
-            if (isTalking) recognition.start(); // ભૂલ આવે તો પણ સાંભળવાનું ચાલુ રાખશે
+        recognition.onend = () => {
+            // જો વાત ચાલુ હોય અને ક્રિશા અત્યારે નથી બોલી રહી, તો ફરીથી સાંભળવું
+            if (isTalking && !window.speechSynthesis.speaking) {
+                try { recognition.start(); } catch(e) {}
+            }
         };
 
         window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); };
