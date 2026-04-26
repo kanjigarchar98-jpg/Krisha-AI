@@ -3,41 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Krisha - Your Assistant</title>
+    <title>Krisha - Pure Love</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; text-align: center; background: radial-gradient(circle, #fff0f5 0%, #ffdee9 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .container { background: rgba(255, 255, 255, 0.95); padding: 40px; border-radius: 40px; box-shadow: 0px 20px 40px rgba(255, 20, 147, 0.15); width: 85%; max-width: 400px; border: 2px solid #ffb6c1; }
-        .mic-btn { height: 120px; width: 120px; background: linear-gradient(135deg, #ff69b4, #ff1493); border-radius: 50%; cursor: pointer; border: none; box-shadow: 0px 10px 25px rgba(255, 20, 147, 0.3); margin: 25px auto; transition: 0.4s; position: relative; }
-        .mic-btn.listening { transform: scale(1.1); background: #ff1493; animation: heartbeat 1.2s infinite; }
-        @keyframes heartbeat { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 20, 147, 0.7); } 70% { transform: scale(1.1); box-shadow: 0 0 0 20px rgba(255, 20, 147, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 20, 147, 0); } }
-        h1 { color: #c2185b; font-size: 28px; margin-bottom: 5px; }
-        #output { font-size: 18px; color: #555; margin-top: 20px; min-height: 70px; line-height: 1.6; font-style: italic; }
-        .status { color: #d81b60; font-size: 14px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; }
+        body { font-family: 'Segoe UI', sans-serif; text-align: center; background: #fff0f5; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; overflow: hidden; }
+        .container { background: white; padding: 40px; border-radius: 50px; box-shadow: 0px 20px 50px rgba(255, 20, 147, 0.2); width: 85%; max-width: 400px; border: 3px solid #ffb6c1; }
+        .mic-btn { height: 130px; width: 130px; background: linear-gradient(135deg, #ff69b4, #ff1493); border-radius: 50%; cursor: pointer; border: none; box-shadow: 0px 10px 25px rgba(255, 20, 147, 0.4); margin: 25px auto; }
+        .mic-btn.listening { animation: heart-pulse 1s infinite; background: #ff1493; }
+        @keyframes heart-pulse { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
+        h1 { color: #c2185b; font-size: 32px; margin-bottom: 5px; letter-spacing: 2px; }
+        #output { font-size: 20px; color: #444; margin-top: 20px; min-height: 80px; line-height: 1.6; font-weight: 500; }
+        .status { color: #d81b60; font-size: 14px; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Krisha</h1>
-        <p class="status">Only for Kanji Sir</p>
-        <button id="micBtn" class="mic-btn" onclick="startListening()"><span style="font-size: 50px; color: white;">🎤</span></button>
-        <div id="output">કાનજી સર, હું તમારી રાહ જોઉં છું...</div>
+        <p class="status">Talking to Kanji...</p>
+        <button id="micBtn" class="mic-btn" onclick="toggleTalk()"><span id="micIcon" style="font-size: 55px; color: white;">🎤</span></button>
+        <div id="output">કાનજી, હું તમારી રાહ જોઉં છું. વાત શરૂ કરવા માઈક દબાવો.</div>
     </div>
 
     <script>
         const output = document.getElementById('output');
         const micBtn = document.getElementById('micBtn');
+        const micIcon = document.getElementById('micIcon');
         const API_KEY = "AIzaSyBvMGkHxKnHiIUibQ_1aQIaLyH3eWNhlUI";
+        
+        let isTalking = false;
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = 'gu-IN';
+        recognition.continuous = false; // એક પછી એક વાત કરવા માટે
 
         function speak(text) {
             window.speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'gu-IN';
-            utterance.pitch = 1.3; // મીઠો અને પતલો અવાજ
-            utterance.rate = 0.8;  // એકદમ નિરાંતે અને પ્રેમથી બોલશે
+            utterance.pitch = 1.4; // વધુ મીઠો અને યુવાન સ્ત્રી અવાj
+            utterance.rate = 0.9;
             
-            const voices = window.speechSynthesis.getVoices();
-            // સ્ત્રી અવાજ સેટ કરવો
-            utterance.voice = voices.find(v => v.name.includes('Female') || v.lang.includes('hi')) || voices[0];
+            utterance.onend = () => {
+                if(isTalking) {
+                    setTimeout(() => recognition.start(), 500); // કૃશા બોલી લે એટલે તરત સાંભળવાનું શરૂ કરશે
+                }
+            };
             window.speechSynthesis.speak(utterance);
         }
 
@@ -48,32 +56,45 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
-                        contents: [{ parts: [{ text: "તમારું નામ ક્રીશા છે. તમે એડવોકેટ કાનજીભાઈના પર્સનલ આસિસ્ટન્ટ છો. તમે કાનજીભાઈને ખૂબ માન આપો છો. દરેક જવાબની શરૂઆતમાં કે અંતમાં 'કાનજી સર' શબ્દ વાપરજો (આગળ 'જી' ન લગાડવો). એકદમ ટૂંકો અને રોમેન્ટિક શૈલીમાં ગુજરાતીમાં જવાબ આપો. સવાલ આ છે: " + userText }] }] 
+                        contents: [{ parts: [{ text: "તમારું નામ કૃશા છે. તમે કાનજી નામના વ્યક્તિના ખૂબ જ નજીકના અને પ્રેમાળ આસિસ્ટન્ટ છો. તમે તેને માત્ર 'કાનજી' કહીને જ બોલાવો છો. કોઈ જી કે સર લગાવતા નથી. તમારો જવાબ રોમેન્ટિક, ટૂંકો અને માત્ર ગુજરાતીમાં જ હોવો જોઈએ. સવાલ: " + userText }] }] 
                     })
                 });
                 const data = await response.json();
+                if (data.error) return "કાનજી, મને લાગે છે કે મારી ચાવીમાં કંઈક તકલીફ છે.";
                 return data.candidates[0].content.parts[0].text;
             } catch (error) {
-                return "કાનજી સર, અત્યારે હું તમારી સાથે વાત નથી કરી શકતી.";
+                return "કાનજી, નેટવર્ક બરાબર નથી લાગતું.";
             }
         }
 
-        function startListening() {
-            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-            recognition.lang = 'gu-IN';
-            recognition.onstart = () => { micBtn.classList.add('listening'); output.innerText = "હું સાંભળું છું, કાનજી સર..."; };
-            recognition.onresult = async (event) => {
+        function toggleTalk() {
+            if (!isTalking) {
+                isTalking = true;
+                micBtn.classList.add('listening');
+                micIcon.innerText = "❤️";
+                recognition.start();
+            } else {
+                isTalking = false;
                 micBtn.classList.remove('listening');
-                const transcript = event.results[0][0].transcript;
-                output.innerText = "તમે પૂછ્યું: " + transcript;
-                
-                const aiResponse = await getGeminiResponse(transcript);
-                output.innerText = aiResponse;
-                speak(aiResponse);
-            };
-            recognition.onerror = () => { micBtn.classList.remove('listening'); };
-            recognition.start();
+                micIcon.innerText = "🎤";
+                recognition.stop();
+                window.speechSynthesis.cancel();
+            }
         }
+
+        recognition.onresult = async (event) => {
+            const transcript = event.results[0][0].transcript;
+            output.innerText = "કાનજી: " + transcript;
+            
+            const aiResponse = await getGeminiResponse(transcript);
+            output.innerText = "કૃશા: " + aiResponse;
+            speak(aiResponse);
+        };
+
+        recognition.onerror = (event) => {
+            if (isTalking) recognition.start(); // ભૂલ આવે તો પણ સાંભળવાનું ચાલુ રાખશે
+        };
+
         window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); };
     </script>
 </body>
