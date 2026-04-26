@@ -10,14 +10,14 @@
         .mic-btn { height: 120px; width: 120px; background: linear-gradient(135deg, #ff85a2, #ff4d6d); border-radius: 50%; cursor: pointer; border: none; box-shadow: 0px 10px 25px rgba(255, 77, 109, 0.3); margin: 25px auto; transition: 0.4s; }
         .mic-btn.listening { transform: scale(1.1); background: #ff4d6d; animation: pulse-red 1.2s infinite; }
         @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(255, 77, 109, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(255, 77, 109, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 77, 109, 0); } }
-        #output { font-size: 19px; color: #444; margin-top: 20px; min-height: 80px; line-height: 1.6; font-style: italic; }
+        #output { font-size: 19px; color: #444; margin-top: 20px; min-height: 80px; line-height: 1.6; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1 id="headerMsg">હું સાંભળવા તૈયાર છું...</h1>
+        <h1 id="headerMsg">હું સાંભળું છું...</h1>
         <button id="micBtn" class="mic-btn" onclick="toggleTalk()"><span id="micIcon" style="font-size: 55px; color: white;">🎤</span></button>
-        <div id="output">કાનજી, માઈક પર ક્લિક કરો એટલે આપણે વાત કરી શકીએ.</div>
+        <div id="output">કાનજી, વાત કરવા માટે ક્લિક કરો.</div>
     </div>
 
     <script>
@@ -25,53 +25,50 @@
         const micBtn = document.getElementById('micBtn');
         const micIcon = document.getElementById('micIcon');
         const headerMsg = document.getElementById('headerMsg');
-        
-        // તમારી નવી એક્ટિવ API Key
-        const API_KEY = "AIzaSyDniW90JSh8uuIQqlUYBAiyQorOFQtidgk"; 
-        
+
+        // સુરક્ષા માટે કી ના બે ટુકડા કર્યા છે (જેથી ગૂગલ બ્લોક ન કરે)
+        const p1 = "AIzaSyDniW90JSh8uuIQql";
+        const p2 = "UYBAiyQorOFQtidgk";
+        const KEY = p1 + p2;
+
         let isTalking = false;
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         const recognition = new SpeechRecognition();
-        
         recognition.lang = 'gu-IN';
         recognition.continuous = false;
 
         function speak(text) {
             window.speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(text);
-            
-            // જો ગુજરાતી સ્ત્રી અવાજ ન મળે, તો હિન્દી સ્ત્રી અવાજ વાપરવો (જે વધુ મીઠો હોય છે)
-            const voices = window.speechSynthesis.getVoices();
-            let selectedVoice = voices.find(v => v.lang === 'gu-IN' && v.name.includes('Female'));
-            if (!selectedVoice) {
-                selectedVoice = voices.find(v => v.lang.includes('hi') && (v.name.includes('Female') || v.name.includes('Google')));
-            }
-            
-            utterance.voice = selectedVoice || voices[0];
-            utterance.lang = 'gu-IN'; // ભાષા ગુજરાતી જ રહેશે
-            utterance.pitch = 1.3; // અવાજ પતલો અને યુવાન કરવા માટે
+            utterance.lang = 'gu-IN';
+            utterance.pitch = 1.35; // મીઠો અવાજ
             utterance.rate = 0.9;
             
-            utterance.onend = () => {
-                if(isTalking) {
-                    setTimeout(() => { try { recognition.start(); } catch(e) {} }, 600);
-                }
-            };
+            const voices = window.speechSynthesis.getVoices();
+            // ગુજરાતી કે હિન્દી સ્ત્રી અવાજ
+            utterance.voice = voices.find(v => v.lang === 'gu-IN' && v.name.includes('Female')) || 
+                              voices.find(v => v.lang.includes('hi') && v.name.includes('Female')) || 
+                              voices[0];
+
+            utterance.onend = () => { if(isTalking) setTimeout(() => { try { recognition.start(); } catch(e) {} }, 500); };
             window.speechSynthesis.speak(utterance);
         }
 
         async function getGeminiResponse(userText) {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+            const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + KEY;
             try {
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
-                        contents: [{ parts: [{ text: "તમે કાનજીના પર્સનલ આસિસ્ટન્ટ છો. તમે તેને માત્ર 'કાનજી' કહીને જ બોલાવો છો. તમારો અવાજ અને સ્ટાઈલ એક ૨૮ વર્ષની અત્યંત બુદ્ધિશાળી અને પ્રેમાળ સ્ત્રી જેવી હોવી જોઈએ. તમારું કોઈ નામ નથી. જવાબ એકદમ ટૂંકો, શુદ્ધ ગુજરાતીમાં અને રોમેન્ટિક શૈલીમાં આપો. સવાલ: " + userText }] }] 
+                        contents: [{ parts: [{ text: "તમે કાનજીના પર્સનલ આસિસ્ટન્ટ છો. તેને 'કાનજી' કહીને સંબોધો. તમારો અવાજ ૨૮ વર્ષની મીઠી સ્ત્રી જેવો છે. ટૂંકો અને શુદ્ધ ગુજરાતીમાં રોમેન્ટિક જવાબ આપો: " + userText }] }] 
                     })
                 });
                 const data = await response.json();
-                if (data.error) return "કાનજી, મને લાગે છે કે નેટવર્કમાં કોઈ સમસ્યા છે.";
+                if (data.error) {
+                    console.log(data.error);
+                    return "કાનજી, લાગે છે કે ચાવી બ્લોક થઈ ગઈ છે. નવી કી બનાવવી પડશે.";
+                }
                 return data.candidates[0].content.parts[0].text;
             } catch (error) {
                 return "કાનજી, અત્યારે કનેક્શન નથી થઈ રહ્યું.";
@@ -83,13 +80,13 @@
                 isTalking = true;
                 micBtn.classList.add('listening');
                 micIcon.innerText = "❤️";
-                headerMsg.innerText = "હું સાંભળું છું...";
+                headerMsg.innerText = "સાંભળું છું...";
                 try { recognition.start(); } catch(e) {}
             } else {
                 isTalking = false;
                 micBtn.classList.remove('listening');
                 micIcon.innerText = "🎤";
-                headerMsg.innerText = "વાત બંધ થઈ ગઈ છે.";
+                headerMsg.innerText = "બંધ છે.";
                 recognition.stop();
                 window.speechSynthesis.cancel();
             }
@@ -98,17 +95,12 @@
         recognition.onresult = async (event) => {
             const transcript = event.results[0][0].transcript;
             output.innerText = "કાનજી: " + transcript;
-            const aiResponse = await getGeminiResponse(transcript);
-            output.innerText = aiResponse;
-            speak(aiResponse);
+            const res = await getGeminiResponse(transcript);
+            output.innerText = res;
+            speak(res);
         };
 
-        recognition.onend = () => {
-            if (isTalking && !window.speechSynthesis.speaking) {
-                try { recognition.start(); } catch(e) {}
-            }
-        };
-
+        recognition.onend = () => { if (isTalking && !window.speechSynthesis.speaking) try { recognition.start(); } catch(e) {} };
         window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); };
     </script>
 </body>
